@@ -34,8 +34,6 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             _currentIndex = index;
           });
-
-          // Refresh landmarks when switching to Overview or Records tab
           if (index == 0 || index == 1) {
             print('Switching to tab $index, refreshing landmarks...');
             context.read<LandmarkProvider>().fetchLandmarks();
