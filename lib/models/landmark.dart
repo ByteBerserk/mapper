@@ -16,8 +16,6 @@ class Landmark {
     this.isSynced = true,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
-
-  // Helper method to safely parse double from dynamic value
   static double _parseDouble(dynamic value) {
     if (value == null) return 0.0;
     if (value is double) return value;
@@ -27,15 +25,11 @@ class Landmark {
     }
     return 0.0;
   }
-
-  // Helper method to safely parse string
   static String _parseString(dynamic value, String defaultValue) {
     if (value == null) return defaultValue;
     if (value is String) return value;
     return value.toString();
   }
-
-  // Convert to Map for database
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -47,8 +41,6 @@ class Landmark {
       'timestamp': timestamp.millisecondsSinceEpoch,
     };
   }
-
-  // Create from Map (Database) - Handle both String and num types
   factory Landmark.fromMap(Map<String, dynamic> map) {
     return Landmark(
       id: map['id'] as int?,
@@ -62,8 +54,6 @@ class Landmark {
       ),
     );
   }
-
-  // Convert to JSON for API
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -73,15 +63,13 @@ class Landmark {
       'image': image,
     };
   }
-
-  // Create from JSON (API Response) - Handle both String and num types
+  
   factory Landmark.fromJson(Map<String, dynamic> json) {
     return Landmark(
       id: json['id'] as int?,
       title: _parseString(json['title'], 'Untitled'),
       lat: _parseDouble(json['lat']),
       lon: _parseDouble(json['lon']),
-      // Handle null or missing image with a placeholder
       image: _parseString(json['image'], 'https://via.placeholder.com/400x300?text=No+Image'),
     );
   }
