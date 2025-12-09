@@ -24,6 +24,55 @@ class _RecordsScreenState extends State<RecordsScreen> {
     });
   }
 
+  Widget _buildLandmarkImage(String imageUrl) {
+    // Check if it's a placeholder or invalid URL
+    if (imageUrl.isEmpty ||
+        imageUrl.contains('placeholder') ||
+        imageUrl == 'null') {
+      return Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          Icons.image_not_supported,
+          size: 40,
+          color: Colors.grey[600],
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
+        width: 80,
+        height: 80,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: Colors.grey[300],
+          child: const Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: Colors.grey[300],
+          child: Icon(
+            Icons.broken_image,
+            color: Colors.grey[600],
+            size: 40,
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _deleteLandmark(BuildContext context, Landmark landmark) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -181,25 +230,7 @@ class _RecordsScreenState extends State<RecordsScreen> {
                           padding: const EdgeInsets.all(12),
                           child: Row(
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: CachedNetworkImage(
-                                  imageUrl: landmark.image,
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(
-                                    color: Colors.grey[300],
-                                    child: const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  ),
-                                  errorWidget: (context, url, error) => Container(
-                                    color: Colors.grey[300],
-                                    child: const Icon(Icons.error),
-                                  ),
-                                ),
-                              ),
+                              _buildLandmarkImage(landmark.image),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(

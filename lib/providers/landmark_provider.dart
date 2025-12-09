@@ -54,7 +54,6 @@ class LandmarkProvider extends ChangeNotifier {
     print('>>> FETCH LANDMARKS CALLED');
     print('>>> ========================================');
     print('>>> Current landmarks count: ${_landmarks.length}');
-    print('>>> Is loading: $_isLoading');
     print('>>> Is online: $_isOnline');
 
     _isLoading = true;
@@ -67,36 +66,21 @@ class LandmarkProvider extends ChangeNotifier {
         final apiLandmarks = await _apiService.fetchLandmarks();
         print('>>> API returned ${apiLandmarks.length} landmarks');
 
-        // Update state immediately
+        // Update state
         _landmarks = List.from(apiLandmarks);
         print('>>> State updated with ${_landmarks.length} landmarks');
 
-        // Notify listeners before database operation
-        _isLoading = false;
-        notifyListeners();
-        print('>>> UI notified');
-
         // Save to database in background
-        try {
-          print('>>> Saving to database...');
-          await _dbService.clearAllLandmarks();
-          for (var landmark in apiLandmarks) {
-            await _dbService.insertLandmark(landmark);
-          }
-          print('>>> Database saved successfully');
-        } catch (dbError) {
-          print('>>> Database save error (non-critical): $dbError');
-        }
+        _saveToDatabase(apiLandmarks);
       } else {
         print('>>> Loading from database (offline)...');
         _landmarks = await _dbService.getAllLandmarks();
         print('>>> Loaded ${_landmarks.length} landmarks from database');
-        _isLoading = false;
-        notifyListeners();
       }
 
+      _isLoading = false;
+      notifyListeners();
       print('>>> Fetch completed successfully');
-      print('>>> Final landmark count: ${_landmarks.length}');
     } catch (e, stackTrace) {
       print('>>> ========================================');
       print('>>> FETCH ERROR');
@@ -114,12 +98,25 @@ class LandmarkProvider extends ChangeNotifier {
       } catch (dbError) {
         print('>>> Database fallback also failed: $dbError');
       }
-    } finally {
+
       _isLoading = false;
       notifyListeners();
-      print('>>> Fetch operation complete');
-      print('>>> ========================================');
-      print('');
+    }
+
+    print('>>> ========================================');
+    print('');
+  }
+
+  Future<void> _saveToDatabase(List<Landmark> landmarks) async {
+    try {
+      print('>>> Saving ${landmarks.length} landmarks to database...');
+      await _dbService.clearAllLandmarks();
+      for (var landmark in landmarks) {
+        await _dbService.insertLandmark(landmark);
+      }
+      print('>>> Database saved successfully');
+    } catch (dbError) {
+      print('>>> Database save error (non-critical): $dbError');
     }
   }
 
@@ -153,7 +150,7 @@ class LandmarkProvider extends ChangeNotifier {
         imageFile: imageFile,
       );
 
-      print('>>> Create successful, waiting 2 seconds...');
+      print('>>> Create successful, waiting 2 seconds for server...');
       await Future.delayed(const Duration(seconds: 2));
 
       print('>>> Fetching updated list...');
@@ -201,7 +198,7 @@ class LandmarkProvider extends ChangeNotifier {
         imageFile: imageFile,
       );
 
-      print('>>> Update successful, waiting 2 seconds...');
+      print('>>> Update successful, waiting 2 seconds for server...');
       await Future.delayed(const Duration(seconds: 2));
 
       print('>>> Fetching updated list...');
@@ -237,7 +234,7 @@ class LandmarkProvider extends ChangeNotifier {
       print('>>> Deleting landmark via API...');
       await _apiService.deleteLandmark(id);
 
-      print('>>> Delete successful, waiting 2 seconds...');
+      print('>>> Delete successful, waiting 2 seconds for server...');
       await Future.delayed(const Duration(seconds: 2));
 
       print('>>> Fetching updated list...');

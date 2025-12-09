@@ -17,6 +17,24 @@ class Landmark {
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 
+  // Helper method to safely parse double from dynamic value
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      return double.tryParse(value) ?? 0.0;
+    }
+    return 0.0;
+  }
+
+  // Helper method to safely parse string
+  static String _parseString(dynamic value, String defaultValue) {
+    if (value == null) return defaultValue;
+    if (value is String) return value;
+    return value.toString();
+  }
+
   // Convert to Map for database
   Map<String, dynamic> toMap() {
     return {
@@ -30,14 +48,14 @@ class Landmark {
     };
   }
 
-  // Create from Map
+  // Create from Map (Database) - Handle both String and num types
   factory Landmark.fromMap(Map<String, dynamic> map) {
     return Landmark(
       id: map['id'] as int?,
-      title: map['title'] as String,
-      lat: (map['lat'] as num).toDouble(),
-      lon: (map['lon'] as num).toDouble(),
-      image: map['image'] as String,
+      title: _parseString(map['title'], 'Untitled'),
+      lat: _parseDouble(map['lat']),
+      lon: _parseDouble(map['lon']),
+      image: _parseString(map['image'], ''),
       isSynced: (map['isSynced'] as int?) == 1,
       timestamp: DateTime.fromMillisecondsSinceEpoch(
         map['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch,
@@ -56,14 +74,15 @@ class Landmark {
     };
   }
 
-  // Create from JSON
+  // Create from JSON (API Response) - Handle both String and num types
   factory Landmark.fromJson(Map<String, dynamic> json) {
     return Landmark(
       id: json['id'] as int?,
-      title: json['title'] as String,
-      lat: (json['lat'] as num).toDouble(),
-      lon: (json['lon'] as num).toDouble(),
-      image: json['image'] as String,
+      title: _parseString(json['title'], 'Untitled'),
+      lat: _parseDouble(json['lat']),
+      lon: _parseDouble(json['lon']),
+      // Handle null or missing image with a placeholder
+      image: _parseString(json['image'], 'https://via.placeholder.com/400x300?text=No+Image'),
     );
   }
 
