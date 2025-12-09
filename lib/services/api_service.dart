@@ -8,7 +8,10 @@ class ApiService {
   static const String imageBaseUrl = 'https://labs.anontech.info/cse489/t3/';
 
   // Helper to build full image URL
-  static String getFullImageUrl(String imagePath) {
+  static String getFullImageUrl(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty || imagePath == 'null') {
+      return 'https://via.placeholder.com/400x300?text=No+Image';
+    }
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
@@ -32,78 +35,72 @@ class ApiService {
       ).timeout(const Duration(seconds: 15));
 
       print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         try {
           final dynamic data = json.decode(response.body);
-          print('Parsed data type: ${data.runtimeType}');
 
           List<Landmark> landmarks = [];
 
           if (data is List) {
             print('Response is a List with ${data.length} items');
-            landmarks = data.map((json) {
-              // Ensure image has full URL (handle null images)
-              if (json['image'] != null && json['image'] != '') {
+
+            // Filter out invalid landmarks (empty title, lat, lon)
+            final validData = data.where((json) {
+              final title = json['title']?.toString() ?? '';
+              final lat = json['lat']?.toString() ?? '';
+              final lon = json['lon']?.toString() ?? '';
+
+              return title.isNotEmpty && lat.isNotEmpty && lon.isNotEmpty;
+            }).toList();
+
+            print('Filtered to ${validData.length} valid landmarks');
+
+            landmarks = validData.map((json) {
+              if (json['image'] != null && json['image'] != '' && json['image'] != 'null') {
                 json['image'] = getFullImageUrl(json['image']);
               } else {
                 json['image'] = 'https://via.placeholder.com/400x300?text=No+Image';
               }
               return Landmark.fromJson(json);
             }).toList();
-          } else if (data is Map) {
-            print('Response is a Map with keys: ${data.keys}');
+          } else if (data is Map && data['data'] is List) {
+            final items = data['data'] as List;
 
-            // Try different possible keys
-            List? items;
-            if (data['data'] is List) {
-              items = data['data'] as List;
-            } else if (data['landmarks'] is List) {
-              items = data['landmarks'] as List;
-            } else if (data['items'] is List) {
-              items = data['items'] as List;
-            } else if (data['records'] is List) {
-              items = data['records'] as List;
-            }
+            final validData = items.where((json) {
+              final title = json['title']?.toString() ?? '';
+              final lat = json['lat']?.toString() ?? '';
+              final lon = json['lon']?.toString() ?? '';
 
-            if (items != null) {
-              print('Found array with ${items.length} items');
-              landmarks = items.map((json) {
-                if (json['image'] != null && json['image'] != '') {
-                  json['image'] = getFullImageUrl(json['image']);
-                } else {
-                  json['image'] = 'https://via.placeholder.com/400x300?text=No+Image';
-                }
-                return Landmark.fromJson(json);
-              }).toList();
-            } else {
-              print('Could not find landmarks array in response');
-            }
+              return title.isNotEmpty && lat.isNotEmpty && lon.isNotEmpty;
+            }).toList();
+
+            print('Filtered to ${validData.length} valid landmarks');
+
+            landmarks = validData.map((json) {
+              if (json['image'] != null && json['image'] != '' && json['image'] != 'null') {
+                json['image'] = getFullImageUrl(json['image']);
+              } else {
+                json['image'] = 'https://via.placeholder.com/400x300?text=No+Image';
+              }
+              return Landmark.fromJson(json);
+            }).toList();
           }
 
-          print('Parsed ${landmarks.length} landmarks');
-          for (var landmark in landmarks) {
-            print('  - ID: ${landmark.id}, Title: ${landmark.title}');
-          }
-
+          print('Parsed ${landmarks.length} valid landmarks');
           print('=== FETCH LANDMARKS SUCCESS ===');
           return landmarks;
         } catch (parseError, stackTrace) {
           print('JSON Parse Error: $parseError');
           print('Stack trace: $stackTrace');
-          print('Raw response: ${response.body}');
           throw Exception('Failed to parse response: $parseError');
         }
       } else {
-        print('HTTP Error: ${response.statusCode}');
-        print('Error body: ${response.body}');
         throw Exception('HTTP ${response.statusCode}: Failed to fetch landmarks');
       }
     } catch (e, stackTrace) {
       print('=== FETCH LANDMARKS ERROR ===');
       print('Error: $e');
-      print('Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -117,10 +114,7 @@ class ApiService {
   }) async {
     try {
       print('=== CREATE LANDMARK START ===');
-      print('URL: $baseUrl');
-      print('Title: $title');
-      print('Lat: $lat, Lon: $lon');
-      print('Has image: ${imageFile != null}');
+      print('Title: $title, Lat: $lat, Lon: $lon');
 
       var request = http.MultipartRequest('POST', Uri.parse(baseUrl));
 
@@ -136,14 +130,12 @@ class ApiService {
           imageFile.path,
         );
         request.files.add(multipartFile);
-        print('Image attached: ${multipartFile.filename}, ${multipartFile.length} bytes');
+        print('Image attached: ${multipartFile.length} bytes');
       }
 
-      print('Sending request...');
       var streamedResponse = await request.send().timeout(
         const Duration(seconds: 30),
       );
-
       var response = await http.Response.fromStream(streamedResponse);
 
       print('Response Status: ${response.statusCode}');
@@ -151,15 +143,12 @@ class ApiService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         print('=== CREATE LANDMARK SUCCESS ===');
-        return {'success': true, 'message': 'Created successfully'};
+        return {'success': true};
       } else {
-        print('=== CREATE LANDMARK FAILED ===');
-        throw Exception('Failed to create landmark: ${response.body}');
+        throw Exception('Failed to create: ${response.body}');
       }
-    } catch (e, stackTrace) {
-      print('=== CREATE LANDMARK ERROR ===');
-      print('Error: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
+      print('=== CREATE LANDMARK ERROR: $e ===');
       rethrow;
     }
   }
@@ -174,19 +163,18 @@ class ApiService {
   }) async {
     try {
       print('=== UPDATE LANDMARK START ===');
-      print('URL: $baseUrl');
-      print('ID: $id');
+      print('ID: $id, Title: $title, Lat: $lat, Lon: $lon');
 
-      var request = http.MultipartRequest('POST', Uri.parse(baseUrl));
+      // Try using PUT method directly with query parameter
+      final uri = Uri.parse('$baseUrl?id=$id');
 
-      // Use _method field to simulate PUT request
-      request.fields['_method'] = 'PUT';
+      var request = http.MultipartRequest('PUT', uri);
+
+      // Add fields
       request.fields['id'] = id.toString();
       request.fields['title'] = title;
       request.fields['lat'] = lat.toString();
       request.fields['lon'] = lon.toString();
-
-      print('Request fields: ${request.fields}');
 
       // Add image if provided
       if (imageFile != null) {
@@ -195,14 +183,13 @@ class ApiService {
           imageFile.path,
         );
         request.files.add(multipartFile);
-        print('New image attached');
+        print('Image attached');
       }
 
-      print('Sending update request...');
+      print('Sending PUT request to: $uri');
       var streamedResponse = await request.send().timeout(
         const Duration(seconds: 30),
       );
-
       var response = await http.Response.fromStream(streamedResponse);
 
       print('Response Status: ${response.statusCode}');
@@ -212,13 +199,10 @@ class ApiService {
         print('=== UPDATE LANDMARK SUCCESS ===');
         return {'success': true};
       } else {
-        print('=== UPDATE LANDMARK FAILED ===');
-        throw Exception('Failed to update landmark: ${response.body}');
+        throw Exception('Failed to update: ${response.body}');
       }
-    } catch (e, stackTrace) {
-      print('=== UPDATE LANDMARK ERROR ===');
-      print('Error: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
+      print('=== UPDATE LANDMARK ERROR: $e ===');
       rethrow;
     }
   }
@@ -227,23 +211,18 @@ class ApiService {
   Future<void> deleteLandmark(int id) async {
     try {
       print('=== DELETE LANDMARK START ===');
-      print('URL: $baseUrl');
       print('ID: $id');
 
-      var request = http.MultipartRequest('POST', Uri.parse(baseUrl));
+      // Try using DELETE method directly with query parameter
+      final uri = Uri.parse('$baseUrl?id=$id');
 
-      // Use _method field to simulate DELETE request
-      request.fields['_method'] = 'DELETE';
-      request.fields['id'] = id.toString();
-
-      print('Request fields: ${request.fields}');
-      print('Sending delete request...');
-
-      var streamedResponse = await request.send().timeout(
-        const Duration(seconds: 30),
-      );
-
-      var response = await http.Response.fromStream(streamedResponse);
+      print('Sending DELETE request to: $uri');
+      final response = await http.delete(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 30));
 
       print('Response Status: ${response.statusCode}');
       print('Response Body: ${response.body}');
@@ -254,13 +233,10 @@ class ApiService {
         print('=== DELETE LANDMARK SUCCESS ===');
         return;
       } else {
-        print('=== DELETE LANDMARK FAILED ===');
-        throw Exception('Failed to delete landmark: ${response.body}');
+        throw Exception('Failed to delete: ${response.body}');
       }
-    } catch (e, stackTrace) {
-      print('=== DELETE LANDMARK ERROR ===');
-      print('Error: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
+      print('=== DELETE LANDMARK ERROR: $e ===');
       rethrow;
     }
   }
