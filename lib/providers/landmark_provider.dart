@@ -213,7 +213,6 @@ class LandmarkProvider extends ChangeNotifier {
       return false;
     }
   }
-
   Future<bool> deleteLandmark(int id) async {
     print('');
     print('>>> ========================================');
@@ -225,7 +224,6 @@ class LandmarkProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
-
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -249,12 +247,10 @@ class LandmarkProvider extends ChangeNotifier {
       return false;
     }
   }
-
   void clearError() {
     _error = null;
     notifyListeners();
   }
-
   Future<void> forceRefresh() async {
     print('>>> Force refresh requested');
     await fetchLandmarks();
