@@ -33,7 +33,7 @@ class LandmarkBottomSheet extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      Navigator.pop(context); // Close bottom sheet
+      Navigator.pop(context); 
 
       final provider = context.read<LandmarkProvider>();
       final success = await provider.deleteLandmark(landmark.id!);
@@ -52,7 +52,7 @@ class LandmarkBottomSheet extends StatelessWidget {
   }
 
   void _editLandmark(BuildContext context) {
-    Navigator.pop(context); // Close bottom sheet
+    Navigator.pop(context); 
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -60,7 +60,6 @@ class LandmarkBottomSheet extends StatelessWidget {
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -82,7 +81,6 @@ class LandmarkBottomSheet extends StatelessWidget {
             ),
           ),
 
-          // Image
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: CachedNetworkImage(
@@ -108,7 +106,6 @@ class LandmarkBottomSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title
                 Text(
                   landmark.title,
                   style: const TextStyle(
@@ -117,8 +114,6 @@ class LandmarkBottomSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-
-                // Location info
                 Row(
                   children: [
                     Icon(
@@ -139,8 +134,6 @@ class LandmarkBottomSheet extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Action buttons
                 Row(
                   children: [
                     Expanded(
