@@ -173,7 +173,6 @@ class _EditLandmarkScreenState extends State<EditLandmarkScreen> {
       }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -242,8 +241,6 @@ class _EditLandmarkScreenState extends State<EditLandmarkScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Title Field
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(
@@ -259,8 +256,6 @@ class _EditLandmarkScreenState extends State<EditLandmarkScreen> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // Latitude Field
               TextFormField(
                 controller: _latController,
                 decoration: const InputDecoration(
@@ -287,8 +282,6 @@ class _EditLandmarkScreenState extends State<EditLandmarkScreen> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // Longitude Field
               TextFormField(
                 controller: _lonController,
                 decoration: const InputDecoration(
@@ -315,8 +308,6 @@ class _EditLandmarkScreenState extends State<EditLandmarkScreen> {
                 },
               ),
               const SizedBox(height: 24),
-
-              // Submit Button
               FilledButton(
                 onPressed: _isSubmitting ? null : _submitForm,
                 style: FilledButton.styleFrom(
