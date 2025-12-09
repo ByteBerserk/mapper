@@ -5,9 +5,7 @@ import '../models/landmark.dart';
 class DatabaseService {
   static final DatabaseService instance = DatabaseService._init();
   static Database? _database;
-
   DatabaseService._init();
-
   Future<Database> get database async {
     if (_database != null) {
       print('>>> Database: Using existing instance');
@@ -18,13 +16,10 @@ class DatabaseService {
     _database = await _initDB('landmarks.db');
     return _database!;
   }
-
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
-
     print('>>> Database path: $path');
-
     return await openDatabase(
       path,
       version: 1,
@@ -34,7 +29,6 @@ class DatabaseService {
       },
     );
   }
-
   Future<void> _createDB(Database db, int version) async {
     print('>>> Creating database tables');
     await db.execute('''
@@ -50,7 +44,6 @@ class DatabaseService {
     ''');
     print('>>> Database tables created');
   }
-
   Future<int> insertLandmark(Landmark landmark) async {
     try {
       final db = await database;
@@ -66,7 +59,6 @@ class DatabaseService {
       rethrow;
     }
   }
-
   Future<List<Landmark>> getAllLandmarks() async {
     try {
       final db = await database;
@@ -74,16 +66,13 @@ class DatabaseService {
         'landmarks',
         orderBy: 'timestamp DESC',
       );
-
       print('>>> DB Query: Found ${maps.length} landmarks');
-
       final landmarks = List.generate(
         maps.length,
             (i) => Landmark.fromMap(maps[i]),
       );
-
-      for (var landmark in landmarks) {
-        print('>>> DB Landmark: ID=${landmark.id}, Title=${landmark.title}');
+      for (var l in landmarks) {
+        print('>>> DB Landmark: ID=${l.id}, Title=${l.title}');
       }
 
       return landmarks;
@@ -92,7 +81,6 @@ class DatabaseService {
       rethrow;
     }
   }
-
   Future<Landmark?> getLandmark(int id) async {
     try {
       final db = await database;
@@ -114,7 +102,6 @@ class DatabaseService {
       rethrow;
     }
   }
-
   Future<int> updateLandmark(Landmark landmark) async {
     try {
       final db = await database;
@@ -131,7 +118,6 @@ class DatabaseService {
       rethrow;
     }
   }
-
   Future<int> deleteLandmark(int id) async {
     try {
       final db = await database;
@@ -147,7 +133,6 @@ class DatabaseService {
       rethrow;
     }
   }
-
   Future<void> clearAllLandmarks() async {
     try {
       final db = await database;
