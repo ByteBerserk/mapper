@@ -154,21 +154,16 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
       ),
     );
   }
-
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
-
-    // Image is now optional - removed the validation check
-
     setState(() => _isSubmitting = true);
-
     try {
       final provider = context.read<LandmarkProvider>();
       final success = await provider.createLandmark(
         title: _titleController.text.trim(),
         lat: double.parse(_latController.text),
         lon: double.parse(_lonController.text),
-        imageFile: _imageFile, // Can be null now
+        imageFile: _imageFile, 
       );
 
       if (mounted) {
@@ -179,8 +174,6 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
               backgroundColor: Colors.green,
             ),
           );
-
-          // Clear form
           _formKey.currentState!.reset();
           _titleController.clear();
           _latController.clear();
@@ -238,7 +231,6 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Image Picker
               GestureDetector(
                 onTap: _showImageSourceDialog,
                 child: Container(
@@ -297,8 +289,6 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Title Field
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(
@@ -314,8 +304,6 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // Latitude Field
               TextFormField(
                 controller: _latController,
                 decoration: const InputDecoration(
@@ -342,8 +330,6 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // Longitude Field
               TextFormField(
                 controller: _lonController,
                 decoration: const InputDecoration(
@@ -370,8 +356,6 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // Get Current Location Button
               OutlinedButton.icon(
                 onPressed: _isLoadingLocation ? null : _getCurrentLocation,
                 icon: _isLoadingLocation
@@ -388,8 +372,6 @@ class _NewEntryScreenState extends State<NewEntryScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Submit Button
               FilledButton(
                 onPressed: _isSubmitting ? null : _submitForm,
                 style: FilledButton.styleFrom(
