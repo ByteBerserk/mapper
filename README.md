@@ -1,9 +1,9 @@
-# Landmark Management App
+# Mapper App
 
 A Flutter-based mobile application for managing geographical landmarks with GPS coordinates, interactive maps, and image support.
 
 ## 📱 App Summary
-The Landmark Management App is a full-featured mobile application that allows users to create, view, edit, and delete geographical landmarks. Built with Flutter, it provides a seamless experience for managing location-based data with support for both online and offline modes.
+The Mapper App is a full-featured mobile application that allows users to create, view, edit, and delete geographical landmarks. Built with Flutter, it provides a seamless experience for managing location-based data with support for both online and offline modes.
 The app integrates with a REST API for cloud storage while maintaining a local SQLite database for offline access. Users can attach images to landmarks (with automatic compression), use GPS to detect their current location, and visualize all landmarks on an interactive map powered by OpenStreetMap.
 
 ## ✨ Features
